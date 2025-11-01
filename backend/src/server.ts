@@ -3,9 +3,12 @@ import cors from 'cors';
 import { prisma } from './lib/prisma';
 import { z } from 'zod';
 import { PrismaClientKnownRequestError } from './generated/prisma/internal/prismaNamespace';
+import dontenv from 'dotenv';
+
+dontenv.config();
 
 const app = express();
-const PORT = 3001;
+const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
