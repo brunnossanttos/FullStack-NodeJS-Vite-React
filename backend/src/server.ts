@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { prisma } from './lib/prisma';
 import { z } from 'zod';
-import { PrismaClientKnownRequestError } from './generated/prisma/internal/prismaNamespace';
+import { PrismaClientKnownRequestError, PrismaClientValidationError } from './generated/prisma/internal/prismaNamespace';
 import dontenv from 'dotenv';
 
 dontenv.config();
@@ -51,17 +51,48 @@ app.post('/api/tasks', async (req: Request, res: Response) => {
 
 app.get('/api/tasks', async (req: Request, res: Response) => {
   try {
+    const { status, search } = req.query;
+
+    const whereClause: any = {};
+
+    if (status === 'pending') {
+      whereClause.completed = false;
+    } else if (status === 'completed') {
+      whereClause.completed = true;
+    }
+
+    if (typeof search === 'string' && search.trim() !== '') {
+      whereClause.OR = [
+        {
+          title: {
+            contains: search,
+          },
+        },
+        {
+          description: {
+            contains: search,
+          },
+        },
+      ];
+    }
+
     const tasks = await prisma.task.findMany({
+      where: whereClause,
       orderBy: {
         createdAt: 'desc',
       },
     });
     res.status(200).json(tasks);
   } catch (error) {
-    res.status(500).json({ message: 'Erro interno do servidor.' });
+    if (error instanceof PrismaClientValidationError) {
+      console.error('🚀 ~ error:', error.message);
+      res.status(400).json({ message: 'Erro na query da base de dados.' });
+    } else {
+      console.error('🚀 ~ error:', error);
+      res.status(500).json({ message: 'Erro interno do servidor.' });
+    }
   }
 });
-
 app.put('/api/tasks/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
