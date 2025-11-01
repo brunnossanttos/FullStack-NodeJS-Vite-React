@@ -72,7 +72,7 @@ Inicie o servidor de desenvolvimento:
 
 Bash
 
-npm run dev
+npm start
 O backend estará a rodar em http://localhost:3000.
 
 Terminal 2: Frontend (React App)
@@ -90,7 +90,7 @@ Inicie o servidor de desenvolvimento do Vite:
 
 Bash
 
-npm run dev
+npm start
 O frontend estará a rodar em http://localhost:5173.
 
 🔑 Acesso
